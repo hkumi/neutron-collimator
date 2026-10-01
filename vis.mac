@@ -1,0 +1,24 @@
+# Interactive view:  ./collimator
+/collimator/sideShielding true
+/collimator/hdpeThickness 6 cm
+/collimator/leadThickness 4 cm
+/collimator/rearLeadThickness 4 cm
+/collimator/channelLength 6 cm
+/run/initialize
+/control/execute source.mac
+
+/vis/open OGL
+/vis/viewer/set/autoRefresh false
+/vis/drawVolume
+/vis/viewer/set/style wireframe
+/vis/viewer/set/viewpointThetaPhi 70 20 deg
+/vis/scene/add/axes 0 0 0 5 cm
+
+/vis/scene/add/trajectories smooth
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set neutron green
+/vis/modeling/trajectories/drawByParticleID-0/set gamma yellow
+/vis/scene/endOfEventAction accumulate 50
+
+/vis/viewer/set/autoRefresh true
+# type e.g.  /run/beamOn 20  to see some events

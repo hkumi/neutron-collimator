@@ -1,0 +1,20 @@
+# Run 3: same geometry as run 2 (3x3 stack), now with the moderator-exit diagnostic
+#   ./collimator run3.mac
+/control/verbose 1
+/run/verbose 1
+/run/numberOfThreads 4
+
+# ---- geometry: must be set BEFORE /run/initialize ----
+/collimator/sideShielding true
+/collimator/hdpeThickness 10 cm
+/collimator/boratedThickness 3 cm
+/collimator/pinholeDiameter 1 cm
+/collimator/screenGap 5 cm
+/collimator/boronMassFraction 0.05
+
+/run/initialize
+
+/control/execute source.mac
+/analysis/setFileName collimator_run3
+/run/printProgress 10000
+/run/beamOn 100000

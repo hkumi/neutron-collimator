@@ -1,0 +1,20 @@
+# Run 2: same as run 1, but WITH the 8 surrounding HDPE blocks
+#   ./collimator run2.mac
+/control/verbose 1
+/run/verbose 1
+/run/numberOfThreads 4
+
+# ---- geometry: must be set BEFORE /run/initialize ----
+/collimator/sideShielding true
+/collimator/hdpeThickness 10 cm
+/collimator/boratedThickness 3 cm
+/collimator/pinholeDiameter 1 cm
+/collimator/screenGap 5 cm
+/collimator/boronMassFraction 0.05
+
+/run/initialize
+
+/control/execute source.mac
+/analysis/setFileName collimator_run2
+/run/printProgress 10000
+/run/beamOn 1000000

@@ -1,0 +1,7 @@
+# 2 MeV D-D neutron source: a point, emitting equally in all directions (4 pi).
+# "Per primary" therefore means "per neutron emitted by the source".
+/gps/particle neutron
+/gps/energy 2 MeV
+/gps/pos/type Point
+/gps/pos/centre 0 0 -3 cm
+/gps/ang/type iso

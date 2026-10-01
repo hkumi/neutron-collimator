@@ -1,0 +1,19 @@
+# Where do the particles in the beam spot come from?
+# Current design: 6 cm moderator, 4 cm lead brick, 3 cm borated sheet, 4 cm rear lead plate.
+#   ./collimator origin.mac
+/control/verbose 1
+/run/verbose 1
+/run/numberOfThreads 4
+/collimator/sideShielding true
+/collimator/hdpeThickness 6 cm
+/collimator/leadThickness 4 cm
+/collimator/rearLeadThickness 4 cm
+/collimator/boratedThickness 3 cm
+/collimator/pinholeDiameter 1 cm
+/collimator/screenGap 5 cm
+/collimator/boronMassFraction 0.05
+/run/initialize
+/control/execute source.mac
+/analysis/setFileName origin
+/run/printProgress 20000
+/run/beamOn 200000
