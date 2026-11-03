@@ -118,12 +118,17 @@ void backFraction(TTree* t, double gap_mm, double rear_mm, double D_mm, double L
     t->ResetBranchAddresses();
 }
 
-void channelAnalysis(const char* prefix = "chan")
+// gap_mm    = distance from the back of the borated sheet to the screen (mm): 50 for the 5 cm runs,
+//             800 for the 76 cm runs (4 cm rear lead + 76 cm)
+// screen_mm = width of the square screen (mm): 300 for the 5 cm runs, 1000 for the 76 cm runs
+// rear_mm   = rear lead plate thickness (mm), 40 so far; moderator, lead only used in the printed title
+void channelAnalysis(const char* prefix = "chan", double gap_mm = 50., double screen_mm = 300.,
+                     double rear_mm = 40., int moderator = 6, int lead = 4)
 {
     const std::vector<int> chan = {0, 2, 4, 6};    // cm, must match channelSweep.sh
     const double rSpot    = 30.;                  // mm
     const double areaSpot = M_PI * 3.0 * 3.0;     // cm2
-    const double areaScr  = 30. * 30.;            // cm2
+    const double areaScr  = (screen_mm/10.) * (screen_mm/10.);   // cm2
     const double areaExit = 100.;                 // cm2
 
     auto gTh = new TGraphErrors(); auto gFast = new TGraphErrors(); auto gDose = new TGraphErrors();
@@ -132,7 +137,10 @@ void channelAnalysis(const char* prefix = "chan")
     auto gNGb = new TGraphErrors(); auto gCdb = new TGraph(); auto gThb = new TGraphErrors();
     std::vector<TString> footLines;
 
-    printf("\nModerator 6 cm, lead brick 4 cm, rear lead 4 cm. Graphite channel behind the brick. Per primary.\n");
+    printf("\nModerator %d cm, lead brick %d cm, rear lead %.0f mm. Graphite channel behind the brick. Per primary.\n",
+           moderator, lead, rear_mm);
+    printf("Files %s_*.root, screen %.0f mm behind the borated sheet (%.0f mm behind the rear lead).\n",
+           prefix, gap_mm, gap_mm - rear_mm);
     printf("\n SCREEN SPOT (r < 30 mm):\n");
     printf("  Chan  L/D   thermal<0.5eV     fast>50keV        gamma dose         n/g ratio    Cd(1/v)  fast: hole / lead\n");
     printf("  (cm)        (n/cm2) [counts]  (n/cm2) [counts]  (Sv) [counts]      (n cm-2 Sv-1)\n");
@@ -152,9 +160,9 @@ void channelAnalysis(const char* prefix = "chan")
         Result x = analyse(tx, areaExit, nPrim, -1.);
         exitTh.push_back(x.phiTh05); exitFast.push_back(x.phiFast);
         double nFast = ts->GetEntries(Form("pdg==2112 && E_eV >= 5e4 && x_mm*x_mm+y_mm*y_mm < %g", rSpot*rSpot));
-        double nHole, nLead; backFraction(ts, 50., 40., 10., L, nHole, nLead);
+        double nHole, nLead; backFraction(ts, gap_mm, rear_mm, 10., L, nHole, nLead);
 
-        const double rBeam = 5. + 50.*10./L;                       // mm
+        const double rBeam = 5. + gap_mm*10./L;                       // mm
         const double areaBeam = M_PI * (rBeam/10.) * (rBeam/10.);  // cm2
         Result bm = analyse(ts, areaBeam, nPrim, rBeam);
         const double ngB = bm.doseSv > 0 ? bm.phiTh05/bm.doseSv : 0.;

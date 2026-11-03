@@ -12,9 +12,19 @@
 
 int main(int argc, char** argv)
 {
-    // No macro given -> interactive mode with visualisation
+    // Interactive mode with visualisation:
+    //   ./collimator               -> opens the window with vis.mac
+    //   ./collimator -v vis76.mac  -> opens the window with another view macro
+    // Batch mode:
+    //   ./collimator run1.mac
+    G4String visMacro = "vis.mac";
     G4UIExecutive* ui = nullptr;
-    if (argc == 1) ui = new G4UIExecutive(argc, argv);
+    if (argc == 1) {
+        ui = new G4UIExecutive(argc, argv);
+    } else if (argc == 3 && G4String(argv[1]) == "-v") {
+        visMacro = argv[2];
+        ui = new G4UIExecutive(1, argv);
+    }
 
     auto runManager = G4RunManagerFactory::CreateRunManager(G4RunManagerType::Default);
 
@@ -35,8 +45,8 @@ int main(int argc, char** argv)
         // batch mode:  ./collimator run1.mac
         UImanager->ApplyCommand("/control/execute " + G4String(argv[1]));
     } else {
-        // interactive mode:  ./collimator
-        UImanager->ApplyCommand("/control/execute vis.mac");
+        // interactive mode
+        UImanager->ApplyCommand("/control/execute " + visMacro);
         ui->SessionStart();
         delete ui;
     }

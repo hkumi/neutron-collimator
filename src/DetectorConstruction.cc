@@ -80,6 +80,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     const G4double zRear    = fHDPEThickness + secondLayer + fBoratedThickness + 0.5*fRearLeadThickness;
     // total length of the beam channel (graphite channel + pinhole in the borated sheet)
     const G4double channelTotal = fChannelLength + fBoratedThickness;
+    if (zScreen + 0.5*screenThickness > 1.5*m || fScreenSize > 3.*m) {
+        G4Exception("DetectorConstruction::Construct()", "Collim002", FatalException,
+                    "The screen does not fit in the world (max 1.5 m from the source, 3 m wide).");
+    }
     if (fRearLeadThickness >= fScreenGap) {
         G4Exception("DetectorConstruction::Construct()", "Collim001", FatalException,
                     "The rear lead plate must be thinner than the screen gap.");
@@ -88,8 +92,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     // Transverse size of the whole stack: 10 cm without side shielding, 30 cm with it
     const G4double stackSize = fSideShielding ? 3.*fBlockSize : fBlockSize;
 
-    // ---------- World (vacuum, 2 x 2 x 2 m) ----------
-    auto solidWorld = new G4Box("World", 1.*m, 1.*m, 1.*m);
+    // ---------- World (vacuum, 3 x 3 x 3 m: room for a screen up to ~1.3 m away) ----------
+    auto solidWorld = new G4Box("World", 1.5*m, 1.5*m, 1.5*m);
     auto logicWorld = new G4LogicalVolume(solidWorld, fVacuum, "World");
     auto physWorld  = new G4PVPlacement(nullptr, G4ThreeVector(), logicWorld, "World",
                                         nullptr, false, 0, checkOverlaps);
@@ -246,6 +250,11 @@ void DetectorConstruction::DefineCommands()
                                                    "Distance from the borated sheet to the screen.");
     c4.SetStates(G4State_PreInit);
     c4.SetToBeBroadcasted(false);
+
+    auto& c4b = fMessenger->DeclarePropertyWithUnit("screenSize", "cm", fScreenSize,
+                                                    "Width (and height) of the square screen.");
+    c4b.SetStates(G4State_PreInit);
+    c4b.SetToBeBroadcasted(false);
 
     auto& c5 = fMessenger->DeclareProperty("boronMassFraction", fBoronFraction,
                                            "Mass fraction of natural boron in borated HDPE (0.05 = 5%).");

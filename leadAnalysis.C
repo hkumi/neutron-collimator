@@ -96,7 +96,9 @@ Result analyse(TTree* t, double area_cm2, double nPrim, double rMax)
     return r;
 }
 
-void leadAnalysis(int moderator = 10)
+// prefix: "lead" = 2 MeV runs (lead_Xcm_modY.root), "lead25" = 2.5 MeV runs (lead25_Xcm_modY.root)
+// The SPOT table only makes sense for the 5 cm screen; for the 76 cm runs use the EXIT table.
+void leadAnalysis(int moderator = 10, const char* prefix = "lead")
 {
     const std::vector<int> lead = {0, 2, 4, 6, 8, 10};   // cm, must match leadSweep.sh
     const double areaExit = 100.;                        // cm2
@@ -106,7 +108,7 @@ void leadAnalysis(int moderator = 10)
     auto gPhiX  = new TGraphErrors(); auto gDoseX = new TGraph(); auto gNGX = new TGraph();
     auto gNGS   = new TGraph();
 
-    printf("\nModerator %d cm. Per primary. n/g = thermal (<0.5 eV) fluence / gamma dose.\n", moderator);
+    printf("\nFiles %s_*_mod%d.root. Moderator %d cm. Per primary. n/g = thermal (<0.5 eV) fluence / gamma dose.\n", prefix, moderator, moderator);
     printf("\n EXIT (10 x 10 cm before the pinhole layer):\n");
     printf("  Lead   thermal<0.025eV  thermal<0.5eV     fast>50keV    gamma dose     n/g ratio      n/g (<0.025)   Cd ratio  Cd ratio\n");
     printf("         (n/cm2)          (n/cm2)           (n/cm2)       (Sv)           (n cm-2 Sv-1)  (n cm-2 Sv-1)  (counts)  (1/v)\n");
@@ -114,7 +116,7 @@ void leadAnalysis(int moderator = 10)
     std::vector<Result> spots; std::vector<int> spotLead;
     int ip = 0;
     for (int t : lead) {
-        TFile* f = TFile::Open(Form("lead_%dcm_mod%d.root", t, moderator));
+        TFile* f = TFile::Open(Form("%s_%dcm_mod%d.root", prefix, t, moderator));
         if (!f || f->IsZombie()) { printf("  %2d cm  (file missing - skipped)\n", t); continue; }
         TH1D*  hPrim = (TH1D*)  f->Get("nPrimaries");
         TTree* tx    = (TTree*) f->Get("ModExit");
@@ -187,5 +189,5 @@ void leadAnalysis(int moderator = 10)
     leg->AddEntry(l11, "~10^{11} (MacGillivray)", "l");
     leg->Draw();
 
-    c->SaveAs(Form("lead_sweep_mod%d.png", moderator));
+    c->SaveAs(Form("%s_sweep_mod%d.png", prefix, moderator));
 }

@@ -37,7 +37,7 @@ private:
     G4double fBoratedThickness = 3.*cm;   // borated HDPE sheet (lab has 0.3 or 3 cm)
     G4double fPinholeDiameter  = 1.*cm;   // pinhole diameter D
     G4double fScreenGap        = 5.*cm;   // distance from back of borated sheet to screen
-    G4double fScreenSize       = 30.*cm;  // screen is 30 x 30 cm
+    G4double fScreenSize       = 30.*cm;  // screen width and height (default 30 x 30 cm)
     G4double fBoronFraction    = 0.05;    // mass fraction of natural boron (5%)
     G4bool   fSideShielding    = false;   // true = add 8 HDPE blocks around the moderator (3x3 stack)
     G4double fLeadThickness    = 0.*cm;   // lead brick behind the moderator (0 = no lead)

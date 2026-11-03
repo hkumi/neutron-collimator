@@ -14,7 +14,8 @@
 #include <cmath>
 #include <cstdio>
 
-void sweepAnalysis()
+// prefix: "sweep" = 2 MeV runs (sweep_Xcm.root), "sweep25" = 2.5 MeV runs (sweep25_Xcm.root)
+void sweepAnalysis(const char* prefix = "sweep")
 {
     const std::vector<int> thick = {2, 4, 6, 8, 10, 12};   // cm, must match sweep.sh
     const double faceArea = 100.;                           // cm2, moderator back face
@@ -32,12 +33,12 @@ void sweepAnalysis()
     auto gFast  = new TGraphErrors();  gFast ->SetTitle("fast > 50 keV");
     auto gGam   = new TGraphErrors();  gGam  ->SetTitle("gammas");
 
-    printf("\nParticles leaving the moderator BACK face, per cm2 per primary:\n");
+    printf("\nFiles %s_*.root. Particles leaving the moderator BACK face, per cm2 per primary:\n", prefix);
     printf("  HDPE   thermal<0.5eV      thermal<0.025eV   thermal<0.5eV,<18deg  fast>50keV        gammas      thermal/fast\n");
 
     int ip = 0;
     for (int t : thick) {
-        TFile* f = TFile::Open(Form("sweep_%dcm.root", t));
+        TFile* f = TFile::Open(Form("%s_%dcm.root", prefix, t));
         if (!f || f->IsZombie()) { printf("  %2d cm  (file missing - skipped)\n", t); continue; }
         TH1D*  hPrim = (TH1D*)  f->Get("nPrimaries");
         TTree* tx    = (TTree*) f->Get("ModExit");
@@ -102,5 +103,5 @@ void sweepAnalysis()
     l2->AddEntry(gGam, gGam->GetTitle(), "pl");
     l2->Draw();
 
-    c->SaveAs("sweep_thickness.png");
+    c->SaveAs(Form("%s_thickness.png", prefix));
 }

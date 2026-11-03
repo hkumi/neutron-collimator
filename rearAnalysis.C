@@ -97,12 +97,19 @@ Result analyse(TTree* t, double area_cm2, double nPrim, double rMax)
     return r;
 }
 
-void rearAnalysis()
+// prefix:    "rear" = 2 MeV runs (screen 5 cm), "rear25" = 2.5 MeV runs (screen 80 cm behind the borated sheet)
+// gap_mm:    back of the borated sheet -> screen (mm): 50 or 800
+// screen_mm: screen width (mm): 300 or 1000
+// moderator, lead: only used in the printed title
+// Region: the 3 cm spot for the 5 cm screen (as before); for a far screen, the beam footprint
+//         r = D/2 + gap*D/L with D = 10 mm and L = 30 mm (the pinhole in the 3 cm borated sheet).
+void rearAnalysis(const char* prefix = "rear", double gap_mm = 50., double screen_mm = 300.,
+                  int moderator = 6, int lead = 4)
 {
     const std::vector<int> rear = {0, 1, 2, 3, 4};   // cm, must match rearLeadSweep.sh
-    const double rSpot    = 30.;                    // mm
-    const double areaSpot = M_PI * 3.0 * 3.0;       // cm2
-    const double areaScr  = 30. * 30.;              // cm2, whole screen
+    const double rSpot    = (gap_mm <= 50.) ? 30. : 5. + gap_mm*10./30.;   // mm
+    const double areaSpot = M_PI * (rSpot/10.) * (rSpot/10.);              // cm2
+    const double areaScr  = (screen_mm/10.) * (screen_mm/10.);              // cm2, whole screen
     const double areaExit = 100.;                   // cm2
 
     auto gTh   = new TGraphErrors();   // spot thermal fluence
@@ -110,15 +117,16 @@ void rearAnalysis()
     auto gDose = new TGraphErrors();   // spot gamma dose
     auto gDoseAll = new TGraph();      // whole-screen gamma dose
 
-    printf("\nModerator 6 cm, lead brick 4 cm. Rear lead plate behind the borated sheet. Per primary.\n");
-    printf("\n SCREEN SPOT (r < 30 mm):\n");
+    printf("\nFiles %s_*.root. Moderator %d cm, lead brick %d cm. Rear lead plate behind the borated sheet. Per primary.\n",
+           prefix, moderator, lead);
+    printf("\n SCREEN SPOT (r < %.0f mm, screen %.0f mm behind the borated sheet):\n", rSpot, gap_mm);
     printf("  Rear   thermal<0.5eV     fast>50keV        gamma dose          n/g ratio     Cd(1/v)   gamma dose whole screen\n");
     printf("  lead   (n/cm2) [counts]  (n/cm2) [counts]  (Sv) [counts]       (n cm-2 Sv-1)           (Sv)\n");
 
     int ip = 0;
     std::vector<double> exitTh;
     for (int t : rear) {
-        TFile* f = TFile::Open(Form("rear_%dcm.root", t));
+        TFile* f = TFile::Open(Form("%s_%dcm.root", prefix, t));
         if (!f || f->IsZombie()) { printf("  %d cm  (file missing - skipped)\n", t); continue; }
         TH1D*  hPrim = (TH1D*)  f->Get("nPrimaries");
         TTree* tx    = (TTree*) f->Get("ModExit");
@@ -165,7 +173,7 @@ void rearAnalysis()
     gDose->SetMinimum(0.);
     gDose->Draw("APL");
     auto leg = new TLegend(0.45, 0.78, 0.89, 0.89);
-    leg->AddEntry(gDose, "beam spot (r < 3 cm)", "pl");
+    leg->AddEntry(gDose, Form("beam spot (r < %.1f cm)", rSpot/10.), "pl");
     leg->Draw();
     c->cd(2);
     gFast->SetTitle("Fast neutrons (> 50 keV) in the beam spot;Rear lead thickness (cm);n per cm^{2} per primary");
@@ -175,5 +183,5 @@ void rearAnalysis()
     gTh->SetTitle("Thermal (< 0.5 eV) in the beam spot (low stats);Rear lead thickness (cm);n per cm^{2} per primary");
     gTh->SetMinimum(0.);
     gTh->Draw("APL");
-    c->SaveAs("rear_lead_sweep.png");
+    c->SaveAs(Form("%s_lead_sweep.png", prefix));
 }
